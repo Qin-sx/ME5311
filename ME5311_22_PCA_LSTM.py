@@ -205,46 +205,39 @@ def plot_reconstruction_error(x, X_reconstructed, lon, lat, time_idx, data_confi
     plt.savefig(f'{data_config["dir"]}/reconstruction_error.png')
     plt.close()
 
-def plot_component_comparison(x, X_pca, pca, scaler, explained_variance_ratio, 
-                             lon, lat, n_samples, n_latitudes, n_longitudes, 
-                             time_idx, data_config, component_numbers):
-    """Plot comparison of reconstructions with different numbers of components."""
-    plt.figure(figsize=(20, 12))
+def plot_pca_modes_and_coefficients(pca, X_pca, time, lon, lat, n_latitudes, n_longitudes, data_config, n_modes_to_plot=6):
+    # Plot spatial modes
+    fig, axes = plt.subplots(2, 3, figsize=(18, 10))
+    axes = axes.flatten()
     
-    # Original data
-    plt.subplot(2, 3, 1)
-    plt.pcolormesh(lon, lat, x[time_idx], shading='auto', cmap='viridis')
-    plt.colorbar(label=f'{data_config["name"]} ({data_config["unit"]})')
-    plt.title('Original Data')
-    plt.xlabel('Longitude')
-    plt.ylabel('Latitude')
-    
-    # Different component numbers
-    for i, n_comp in enumerate(component_numbers):
-        if n_comp <= X_pca.shape[1]:  # Ensure we don't exceed available components
-            # Create a reduced representation with only n_comp components
-            X_pca_reduced = np.zeros_like(X_pca)
-            X_pca_reduced[:, :n_comp] = X_pca[:, :n_comp]
-
-            # Reconstruct with limited components
-            X_recon_partial = pca.inverse_transform(X_pca_reduced)
-            X_recon_partial = scaler.inverse_transform(X_recon_partial)
-            X_recon_partial = X_recon_partial.reshape(n_samples, n_latitudes, n_longitudes)
-
-            # Calculate metrics
-            mse_partial = np.mean((x - X_recon_partial) ** 2)
-            var_explained = np.sum(explained_variance_ratio[:n_comp])
-            
-            # Plot
-            plt.subplot(2, 3, i+2)
-            plt.pcolormesh(lon, lat, X_recon_partial[time_idx], shading='auto', cmap='viridis')
-            plt.colorbar(label=f'{data_config["name"]} ({data_config["unit"]})')
-            plt.title(f'{n_comp} Components\nMSE: {mse_partial:.2f}\nVar: {var_explained:.4f}')
-            plt.xlabel('Longitude')
-            plt.ylabel('Latitude')
+    for i in range(n_modes_to_plot):
+        # Get the spatial mode for the i-th principal component
+        mode = pca.components_[i].reshape(n_latitudes, n_longitudes)
+        
+        # Plot on the corresponding subplot
+        im = axes[i].pcolormesh(lon, lat, mode, cmap='RdBu_r', shading='auto')
+        axes[i].set_title(f'Spatial Mode {i+1}')
+        axes[i].set_xlabel('Longitude')
+        axes[i].set_ylabel('Latitude')
+        fig.colorbar(im, ax=axes[i])
     
     plt.tight_layout()
-    plt.savefig(f'{data_config["dir"]}/component_comparison.png')
+    plt.savefig(f'{data_config["dir"]}/spatial_modes.png')
+    plt.close()
+    
+    # Plot temporal coefficients
+    plt.figure(figsize=(15, 10))
+    for i in range(n_modes_to_plot):
+        plt.subplot(n_modes_to_plot, 1, i+1)
+        plt.plot(time, X_pca[:, i])
+        plt.title(f'Temporal Coefficient of Mode {i+1}')
+        plt.ylabel('Amplitude')
+        if i == n_modes_to_plot-1:
+            plt.xlabel('Time')
+        plt.grid(True)
+    
+    plt.tight_layout()
+    plt.savefig(f'{data_config["dir"]}/temporal_coefficients.png')
     plt.close()
 
 # Main visualization function that calls all the others
@@ -282,16 +275,20 @@ def visualize_pca_results(x, X_pca, pca, scaler, time, lon, lat,
     plot_reconstruction_error(
         x, X_reconstructed, lon, lat, time_idx, data_config)
     
+    # Plot PCA modes and their temporal coefficients
+    plot_pca_modes_and_coefficients(
+        pca, X_pca, time, lon, lat, n_latitudes, n_longitudes, data_config)
+
     # Print summary statistics
     print(f"{data_config['name']} PCA dimensionality reduction: from {n_latitudes * n_longitudes} dimensions to {n_components} dimensions")
     print(f"{data_config['name']} Variance ratio explained by {n_components} principal components: {cumulative_variance_ratio[-1]:.4f}")
     
     # Plot component comparison
-    component_numbers = [5, 10, 20, 30, 50]
-    plot_component_comparison(
-        x, X_pca, pca, scaler, explained_variance_ratio,
-        lon, lat, n_samples, n_latitudes, n_longitudes,
-        time_idx, data_config, component_numbers)
+    # component_numbers = [5, 10, 20, 30, 50]
+    # plot_component_comparison(
+    #     x, X_pca, pca, scaler, explained_variance_ratio,
+    #     lon, lat, n_samples, n_latitudes, n_longitudes,
+    #     time_idx, data_config, component_numbers)
     
     return X_reconstructed, mse
 
