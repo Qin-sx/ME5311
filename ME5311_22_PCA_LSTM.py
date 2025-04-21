@@ -176,33 +176,33 @@ data_types = [
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 print(f"Using device: {device}")
 
-# 对每种数据类型进行PCA分析
+# Process each data type
 for data_config in data_types:
     print(f"\nprocess {data_config['name']}data...")
     
-    # 加载数据
+    # load data
     ds = xr.open_dataset(data_config['file'])
     
-    # 获取数据值
+    # Get the variable data
     da = ds[data_config['var']]
     x = da.values
     
-    # 获取时间快照
+    # get time snapshots
     time = ds['time'].values
     
-    # 获取经纬度值
+    # get data values
     lon = ds['longitude'].values
     lat = ds['latitude'].values
     
-    # 重塑数据用于PCA: 从(n_samples, n_lat, n_lon)到(n_samples, n_features)
+    # (n_samples, n_lat, n_lon) to (n_samples, n_features)
     X_reshaped = x.reshape(n_samples, n_latitudes * n_longitudes)
     
-    # 标准化数据
+    # standardize the data
     scaler = StandardScaler()
     X_scaled = scaler.fit_transform(X_reshaped)
     
-    # 执行PCA
-    n_components = data_config['n_components']  # 从配置中获取主成分数量
+    # PCA
+    n_components = data_config['n_components']
     pca = PCA(n_components=n_components)
     X_pca = pca.fit_transform(X_scaled)
     
@@ -216,7 +216,7 @@ for data_config in data_types:
     threshold_percent = 0.1  # Set your threshold percentage here
     X_pca_fft = apply_fft(X_pca, threshold_percent)
 
-    # =============== LSTM时间序列预测 ===============
+    # =============== LSTM ===============
     print(f"\n run {data_config['name']} 's LSTM time series prediction...")
     
     # Create LSTM results directory
