@@ -6,8 +6,8 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 
 # Create results directories
-os.makedirs('results_slp', exist_ok=True)
-os.makedirs('results_t2m', exist_ok=True)
+os.makedirs('results_slp_pca', exist_ok=True)
+os.makedirs('results_t2m_pca', exist_ok=True)
 
 
 # Visualization functions of PCA results
@@ -182,9 +182,9 @@ shape = (n_samples, n_latitudes, n_longitudes)
 # Data types to process
 data_types = [
     {'file': 'data/slp.nc', 'var': 'msl', 'name': 'Sea Level Pressure', 'unit': 'Pa', 
-     'dir': 'results_slp', 'lstm_dir': 'results_slp_lstm', 'n_components': 50},
+     'dir': 'results_slp_pca', 'n_components': 60},
     {'file': 'data/t2m.nc', 'var': 't2m', 'name': '2-meter Temperature', 'unit': 'K', 
-     'dir': 'results_t2m', 'lstm_dir': 'results_t2m_lstm', 'n_components': 100}
+     'dir': 'results_t2m_pca', 'n_components': 120}
 ]
 
 # 对每种数据类型进行PCA分析
@@ -218,7 +218,7 @@ for data_config in data_types:
     X_pca = pca.fit_transform(X_scaled)
 
     # Apply FFT to PCA components
-    threshold_percent = 2.0  # Set your threshold percentage here
+    threshold_percent = 0.1  # Set your threshold percentage here
     X_pca_fft = apply_fft(X_pca, threshold_percent)
     
     # After performing PCA and FFT

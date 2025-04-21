@@ -171,9 +171,9 @@ shape = (n_samples, n_latitudes, n_longitudes)
 # Data types to process
 data_types = [
     {'file': 'data/slp.nc', 'var': 'msl', 'name': 'Sea Level Pressure', 'unit': 'Pa', 
-     'dir': 'results_slp', 'lstm_dir': 'results_slp_lstm', 'n_components': 50},
+     'dir': 'results_slp', 'lstm_dir': 'results_slp_lstm', 'n_components': 60},
     {'file': 'data/t2m.nc', 'var': 't2m', 'name': '2-meter Temperature', 'unit': 'K', 
-     'dir': 'results_t2m', 'lstm_dir': 'results_t2m_lstm', 'n_components': 100}
+     'dir': 'results_t2m', 'lstm_dir': 'results_t2m_lstm', 'n_components': 120}
 ]
 
 
