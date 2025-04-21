@@ -146,158 +146,6 @@ def generate_multi_step_predictions(model, initial_sequence, steps, device):
     
     return np.array(predictions)
 
-
-# # Visualization functions of PCA results
-# def plot_pca_explained_variance(explained_variance_ratio, n_components, data_config):
-#     """Plot the cumulative explained variance by number of components."""
-#     cumulative_variance_ratio = np.cumsum(explained_variance_ratio)
-    
-#     plt.figure(figsize=(10, 6))
-#     plt.plot(range(1, n_components + 1), cumulative_variance_ratio, 'bo-')
-#     plt.xlabel('Number of Components')
-#     plt.ylabel('Cumulative Explained Variance')
-#     plt.title(f'{data_config["name"]} - Explained Variance by Components')
-#     plt.grid(True)
-#     plt.savefig(f'{data_config["dir"]}/pca_explained_variance.png')
-#     plt.close()
-    
-#     return cumulative_variance_ratio
-
-# def plot_singular_value_spectrum(singular_values, n_components, data_config):
-#     """Plot the singular value spectrum in log scale."""
-#     plt.figure(figsize=(10, 6))
-#     plt.semilogy(range(1, n_components + 1), singular_values, 'ro-')
-#     plt.xlabel('Principal Component Index')
-#     plt.ylabel('Singular Value (log scale)')
-#     plt.title(f'{data_config["name"]} - Singular Value Spectrum')
-#     plt.grid(True)
-#     plt.savefig(f'{data_config["dir"]}/singular_value_spectrum.png')
-#     plt.close()
-
-# def plot_original_vs_reconstructed(x, X_reconstructed, time, lon, lat, time_idx, data_config):
-#     """Plot original data side by side with reconstructed data."""
-#     plt.figure(figsize=(18, 6))
-    
-#     # Original data
-#     plt.subplot(1, 2, 1)
-#     plt.pcolormesh(lon, lat, x[time_idx], shading='auto', cmap='viridis')
-#     plt.colorbar(label=f'{data_config["name"]} ({data_config["unit"]})')
-#     plt.title(f'Original Data - {time[time_idx]}')
-#     plt.xlabel('Longitude')
-#     plt.ylabel('Latitude')
-    
-#     # Reconstructed data
-#     plt.subplot(1, 2, 2)
-#     plt.pcolormesh(lon, lat, X_reconstructed[time_idx], shading='auto', cmap='viridis')
-#     plt.colorbar(label=f'{data_config["name"]} ({data_config["unit"]})')
-#     plt.title(f'Reconstructed Data - {time[time_idx]}')
-#     plt.xlabel('Longitude')
-#     plt.ylabel('Latitude')
-    
-#     plt.tight_layout()
-#     plt.savefig(f'{data_config["dir"]}/original_vs_reconstructed.png')
-#     plt.close()
-
-# def plot_reconstruction_error(x, X_reconstructed, lon, lat, time_idx, data_config):
-#     """Plot the reconstruction error map."""
-#     plt.figure(figsize=(10, 6))
-#     plt.pcolormesh(lon, lat, x[time_idx] - X_reconstructed[time_idx], 
-#                   cmap='RdBu_r', shading='auto')
-#     plt.colorbar(label=f'Error ({data_config["unit"]})')
-#     plt.title(f'{data_config["name"]} - Reconstruction Error')
-#     plt.xlabel('Longitude')
-#     plt.ylabel('Latitude')
-#     plt.tight_layout()
-#     plt.savefig(f'{data_config["dir"]}/reconstruction_error.png')
-#     plt.close()
-
-# def plot_pca_modes_and_coefficients(pca, X_pca, time, lon, lat, n_latitudes, n_longitudes, data_config, n_modes_to_plot=6):
-#     # Plot spatial modes
-#     fig, axes = plt.subplots(2, 3, figsize=(18, 10))
-#     axes = axes.flatten()
-    
-#     for i in range(n_modes_to_plot):
-#         # Get the spatial mode for the i-th principal component
-#         mode = pca.components_[i].reshape(n_latitudes, n_longitudes)
-        
-#         # Plot on the corresponding subplot
-#         im = axes[i].pcolormesh(lon, lat, mode, cmap='RdBu_r', shading='auto')
-#         axes[i].set_title(f'Spatial Mode {i+1}')
-#         axes[i].set_xlabel('Longitude')
-#         axes[i].set_ylabel('Latitude')
-#         fig.colorbar(im, ax=axes[i])
-    
-#     plt.tight_layout()
-#     plt.savefig(f'{data_config["dir"]}/spatial_modes.png')
-#     plt.close()
-    
-#     # Plot temporal coefficients
-#     plt.figure(figsize=(15, 10))
-#     for i in range(n_modes_to_plot):
-#         plt.subplot(n_modes_to_plot, 1, i+1)
-#         plt.plot(time, X_pca[:, i])
-#         plt.title(f'Temporal Coefficient of Mode {i+1}')
-#         plt.ylabel('Amplitude')
-#         if i == n_modes_to_plot-1:
-#             plt.xlabel('Time')
-#         plt.grid(True)
-    
-#     plt.tight_layout()
-#     plt.savefig(f'{data_config["dir"]}/temporal_coefficients.png')
-#     plt.close()
-
-# # Main visualization function that calls all the others
-# def visualize_pca_results(x, X_pca, pca, scaler, time, lon, lat, 
-#                          n_samples, n_latitudes, n_longitudes, data_config):
-#     """Generate all PCA visualization plots and print summary statistics."""
-#     # Get PCA components and explained variance
-#     explained_variance_ratio = pca.explained_variance_ratio_
-#     n_components = X_pca.shape[1]
-    
-#     # Plot explained variance
-#     cumulative_variance_ratio = plot_pca_explained_variance(
-#         explained_variance_ratio, n_components, data_config)
-    
-#     # Plot singular values
-#     plot_singular_value_spectrum(pca.singular_values_, n_components, data_config)
-    
-#     # Reconstruct data
-#     X_reconstructed = pca.inverse_transform(X_pca)
-#     X_reconstructed = scaler.inverse_transform(X_reconstructed)
-#     X_reconstructed = X_reconstructed.reshape(n_samples, n_latitudes, n_longitudes)
-    
-#     # Calculate reconstruction error
-#     mse = np.mean((x - X_reconstructed) ** 2)
-#     print(f"{data_config['name']} mse of reconstruction: {mse}")
-    
-#     # Use the last time point for visualization
-#     time_idx = -1  # Last snapshot
-    
-#     # Plot original vs reconstructed
-#     plot_original_vs_reconstructed(
-#         x, X_reconstructed, time, lon, lat, time_idx, data_config)
-    
-#     # Plot reconstruction error
-#     plot_reconstruction_error(
-#         x, X_reconstructed, lon, lat, time_idx, data_config)
-    
-#     # Plot PCA modes and their temporal coefficients
-#     plot_pca_modes_and_coefficients(
-#         pca, X_pca, time, lon, lat, n_latitudes, n_longitudes, data_config)
-
-#     # Print summary statistics
-#     print(f"{data_config['name']} PCA dimensionality reduction: from {n_latitudes * n_longitudes} dimensions to {n_components} dimensions")
-#     print(f"{data_config['name']} Variance ratio explained by {n_components} principal components: {cumulative_variance_ratio[-1]:.4f}")
-    
-#     # Plot component comparison
-#     # component_numbers = [5, 10, 20, 30, 50]
-#     # plot_component_comparison(
-#     #     x, X_pca, pca, scaler, explained_variance_ratio,
-#     #     lon, lat, n_samples, n_latitudes, n_longitudes,
-#     #     time_idx, data_config, component_numbers)
-    
-#     return X_reconstructed, mse
-
 # Function to apply FFT to PCA components
 def apply_fft(X_pca, threshold_percent):
     X_pca_fft = np.zeros_like(X_pca)
@@ -319,9 +167,9 @@ shape = (n_samples, n_latitudes, n_longitudes)
 # Data types to process
 data_types = [
     {'file': 'data/slp.nc', 'var': 'msl', 'name': 'Sea Level Pressure', 'unit': 'Pa', 
-     'dir': 'results_slp', 'lstm_dir': 'results_slp_lstm', 'n_components': 50},
+     'dir': 'results_slp', 'lstm_dir': 'results_slp_lstm', 'n_components': 60},
     {'file': 'data/t2m.nc', 'var': 't2m', 'name': '2-meter Temperature', 'unit': 'K', 
-     'dir': 'results_t2m', 'lstm_dir': 'results_t2m_lstm', 'n_components': 100}
+     'dir': 'results_t2m', 'lstm_dir': 'results_t2m_lstm', 'n_components': 120}
 ]
 
 # Set device (GPU if available, else CPU)
@@ -365,7 +213,7 @@ for data_config in data_types:
     # )
 
     # Apply FFT to PCA components
-    threshold_percent = 2.0  # Set your threshold percentage here
+    threshold_percent = 0.1  # Set your threshold percentage here
     X_pca_fft = apply_fft(X_pca, threshold_percent)
 
     # =============== LSTM时间序列预测 ===============
@@ -387,7 +235,7 @@ for data_config in data_types:
     print(f"Data split: Train {X_train.shape[0]} samples, Validation {X_val.shape[0]} samples, Test {X_test.shape[0]} samples")
     
     # 2. Create PyTorch datasets and dataloaders
-    seq_length = 80  # Use past 30 days to predict next day
+    seq_length = 100  # Use past 30 days to predict next day
     batch_size = 64
     
     train_dataset = TimeSeriesDataset(X_train, seq_length)
@@ -491,85 +339,58 @@ for data_config in data_types:
     
     # 8. Visualize predictions vs ground truth
     # Get the last sequence from test set
-    last_seq_idx = len(test_dataset) - 1
-    last_sequence, true_next = test_dataset[last_seq_idx]
-    
-    # Make prediction
+    final_sequence = X_pca_fft[int(-1-seq_length):-1]  # Last 100 steps (excluding the very last step)
+    true_final = X_pca_fft[-1]  # The very last step
+
+    # Make prediction using the model
     model.eval()
     with torch.no_grad():
-        pred_next = model(last_sequence.unsqueeze(0).to(device)).cpu().numpy()[0]
+        # Convert to tensor and add batch dimension
+        input_sequence = torch.FloatTensor(final_sequence).unsqueeze(0).to(device)
+        # Predict
+        pred_final = model(input_sequence).cpu().numpy()[0]
     
     # Convert back to original space for visualization
-    true_next_orig = pca.inverse_transform(true_next.numpy().reshape(1, -1))
-    true_next_orig = scaler.inverse_transform(true_next_orig)
-    true_next_orig = true_next_orig.reshape(n_latitudes, n_longitudes)
+    # true_next_orig = pca.inverse_transform(true_next.numpy().reshape(1, -1))
+    # true_next_orig = scaler.inverse_transform(true_next_orig)
+    # true_next_orig = true_next_orig.reshape(n_latitudes, n_longitudes)
     
-    pred_next_orig = pca.inverse_transform(pred_next.reshape(1, -1))
-    pred_next_orig = scaler.inverse_transform(pred_next_orig)
-    pred_next_orig = pred_next_orig.reshape(n_latitudes, n_longitudes)
-    
-    # Visualization
-    plt.figure(figsize=(18, 6))
-    
-    # Ground truth
-    plt.subplot(1, 3, 1)
-    plt.pcolormesh(lon, lat, true_next_orig, shading='auto', cmap='viridis')
-    plt.colorbar(label=f'{data_config["name"]} ({data_config["unit"]})')
-    plt.title('True Next State')
-    plt.xlabel('Longitude')
-    plt.ylabel('Latitude')
-    
-    # Prediction
-    plt.subplot(1, 3, 2)
-    plt.pcolormesh(lon, lat, pred_next_orig, shading='auto', cmap='viridis')
-    plt.colorbar(label=f'{data_config["name"]} ({data_config["unit"]})')
-    plt.title('Predicted Next State')
-    plt.xlabel('Longitude')
-    plt.ylabel('Latitude')
-    
-    # Error
-    plt.subplot(1, 3, 3)
-    error = true_next_orig - pred_next_orig
-    plt.pcolormesh(lon, lat, error, cmap='RdBu_r', shading='auto')
-    plt.colorbar(label=f'Error ({data_config["unit"]})')
-    plt.title(f'Prediction Error (MSE: {np.mean(error**2):.2f})')
-    plt.xlabel('Longitude')
-    plt.ylabel('Latitude')
-    
-    plt.tight_layout()
-    plt.savefig(f'{lstm_dir}/prediction_comparison.png')
-    plt.close()
+    pred_final_orig = pca.inverse_transform(pred_final.reshape(1, -1))
+    pred_final_orig = scaler.inverse_transform(pred_final_orig)
+    pred_final_orig = pred_final_orig.reshape(n_latitudes, n_longitudes)
     
     # Compare with original data
-    plt.figure(figsize=(18, 6))
+    # plt.figure(figsize=(18, 6))
 
-    # Original data
-    plt.subplot(1, 3, 1)
-    plt.pcolormesh(lon, lat, x[-1, :, :], shading='auto', cmap='viridis')  # Assuming x is your original data
-    plt.colorbar(label=f'{data_config["name"]} ({data_config["unit"]})')
-    plt.title('Original Data')
-    plt.xlabel('Longitude')
-    plt.ylabel('Latitude')
+    # # Original data
+    # plt.subplot(1, 3, 1)
+    # plt.pcolormesh(lon, lat, x[-1, :, :], shading='auto', cmap='viridis')
+    # plt.colorbar(label=f'{data_config["name"]} ({data_config["unit"]})')
+    # plt.title('Original Data')
+    # plt.xlabel('Longitude')
+    # plt.ylabel('Latitude')
 
-    # Ground truth (PCA reconstructed)
-    plt.subplot(1, 3, 2)
-    plt.pcolormesh(lon, lat, pred_next_orig, shading='auto', cmap='viridis')
-    plt.colorbar(label=f'{data_config["name"]} ({data_config["unit"]})')
-    plt.title('True Next State (PCA Reconstructed)')
-    plt.xlabel('Longitude')
-    plt.ylabel('Latitude')
+    # # Ground truth (PCA reconstructed)
+    # plt.subplot(1, 3, 2)
+    # plt.pcolormesh(lon, lat, pred_final_orig, shading='auto', cmap='viridis')
+    # plt.colorbar(label=f'{data_config["name"]} ({data_config["unit"]})')
+    # plt.title('True Next State (PCA Reconstructed)')
+    # plt.xlabel('Longitude')
+    # plt.ylabel('Latitude')
 
+    plt.figure(figsize=(10, 6))
     # Error between original and reconstructed
-    plt.subplot(1, 3, 3)
-    error_original = x[-1, :, :] - pred_next_orig
+    # plt.subplot(1, 3, 3)
+    error_original = x[-1, :, :] - pred_final_orig
+    print(f"Error between original and reconstructed: {np.mean(error_original**2):.6f}")
     plt.pcolormesh(lon, lat, error_original, cmap='RdBu_r', shading='auto')
     plt.colorbar(label=f'Error ({data_config["unit"]})')
-    plt.title(f'Original vs Reconstructed Error (MSE: {np.mean(error_original**2):.2f})')
+    plt.title(f'Error Comparison')
     plt.xlabel('Longitude')
     plt.ylabel('Latitude')
 
     plt.tight_layout()
-    plt.savefig(f'{lstm_dir}/original_vs_reconstructed.png')
+    plt.savefig(f'{lstm_dir}/lstm_error_comparison.png')
     plt.close()
 
     print(f"{data_config['name']} LSTM done, result in {lstm_dir} directory")
