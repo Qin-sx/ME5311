@@ -365,7 +365,7 @@ for data_config in data_types:
     # )
 
     # Apply FFT to PCA components
-    threshold_percent = 5.0  # Set your threshold percentage here
+    threshold_percent = 2.0  # Set your threshold percentage here
     X_pca_fft = apply_fft(X_pca, threshold_percent)
 
     # =============== LSTM时间序列预测 ===============
@@ -387,7 +387,7 @@ for data_config in data_types:
     print(f"Data split: Train {X_train.shape[0]} samples, Validation {X_val.shape[0]} samples, Test {X_test.shape[0]} samples")
     
     # 2. Create PyTorch datasets and dataloaders
-    seq_length = 50  # Use past 30 days to predict next day
+    seq_length = 80  # Use past 30 days to predict next day
     batch_size = 64
     
     train_dataset = TimeSeriesDataset(X_train, seq_length)
@@ -572,43 +572,6 @@ for data_config in data_types:
     plt.savefig(f'{lstm_dir}/original_vs_reconstructed.png')
     plt.close()
 
-
-
-    # 9. Generate multi-step predictions
-    multi_step_horizon = 10
-    initial_sequence = last_sequence.numpy()
-    
-    multi_step_preds = generate_multi_step_predictions(
-        model=model,
-        initial_sequence=initial_sequence,
-        steps=multi_step_horizon,
-        device=device
-    )
-    
-    # Convert predictions to original space
-    multi_step_preds_orig = []
-    for pred in multi_step_preds:
-        pred_orig = pca.inverse_transform(pred.reshape(1, -1))
-        pred_orig = scaler.inverse_transform(pred_orig)
-        pred_orig = pred_orig.reshape(n_latitudes, n_longitudes)
-        multi_step_preds_orig.append(pred_orig)
-    
-    # Visualize multi-step predictions
-    steps_to_show = [0, 4, 9]  # Day 1, 5, 10
-    
-    plt.figure(figsize=(18, 6))
-    for i, step in enumerate(steps_to_show):
-        plt.subplot(1, 3, i+1)
-        plt.pcolormesh(lon, lat, multi_step_preds_orig[step], shading='auto', cmap='viridis')
-        plt.colorbar(label=f'{data_config["name"]} ({data_config["unit"]})')
-        plt.title(f'Prediction: t+{step+1} day')
-        plt.xlabel('Longitude')
-        plt.ylabel('Latitude')
-    
-    plt.tight_layout()
-    plt.savefig(f'{lstm_dir}/multi_step_prediction.png')
-    plt.close()
-    
     print(f"{data_config['name']} LSTM done, result in {lstm_dir} directory")
 
 print("\nAll processes completed.")

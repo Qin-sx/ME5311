@@ -216,9 +216,9 @@ for data_config in data_types:
     n_components = data_config['n_components']  # 从配置中获取主成分数量
     pca = PCA(n_components=n_components)
     X_pca = pca.fit_transform(X_scaled)
-    
+
     # Apply FFT to PCA components
-    threshold_percent = 5.0  # Set your threshold percentage here
+    threshold_percent = 2.0  # Set your threshold percentage here
     X_pca_fft = apply_fft(X_pca, threshold_percent)
     
     # After performing PCA and FFT

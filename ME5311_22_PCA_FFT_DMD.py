@@ -250,7 +250,7 @@ for data_config in data_types:
     X_pca = pca.fit_transform(X_scaled)
     
     # Apply FFT to PCA components
-    threshold_percent = 5.0  # Set your threshold percentage here
+    threshold_percent = 2.0  # Set your threshold percentage here
     X_pca_fft = apply_fft(X_pca, threshold_percent)
     
 
