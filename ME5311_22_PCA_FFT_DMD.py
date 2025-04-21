@@ -6,8 +6,8 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 
 # Create results directories
-os.makedirs('results_slp', exist_ok=True)
-os.makedirs('results_t2m', exist_ok=True)
+os.makedirs('results_slp_dmd', exist_ok=True)
+os.makedirs('results_t2m_dmd', exist_ok=True)
 
 
 # Visualization functions of PCA results
@@ -214,9 +214,9 @@ shape = (n_samples, n_latitudes, n_longitudes)
 # Data types to process
 data_types = [
     {'file': 'data/slp.nc', 'var': 'msl', 'name': 'Sea Level Pressure', 'unit': 'Pa', 
-     'dir': 'results_slp', 'lstm_dir': 'results_slp_lstm', 'n_components': 50},
+     'dir': 'results_slp_dmd', 'lstm_dir': 'results_slp_lstm', 'n_components': 60},
     {'file': 'data/t2m.nc', 'var': 't2m', 'name': '2-meter Temperature', 'unit': 'K', 
-     'dir': 'results_t2m', 'lstm_dir': 'results_t2m_lstm', 'n_components': 100}
+     'dir': 'results_t2m_dmd', 'lstm_dir': 'results_t2m_lstm', 'n_components': 120}
 ]
 
 # 对每种数据类型进行PCA分析
@@ -250,7 +250,7 @@ for data_config in data_types:
     X_pca = pca.fit_transform(X_scaled)
     
     # Apply FFT to PCA components
-    threshold_percent = 2.0  # Set your threshold percentage here
+    threshold_percent = 0.1  # Set your threshold percentage here
     X_pca_fft = apply_fft(X_pca, threshold_percent)
     
 
@@ -269,39 +269,39 @@ for data_config in data_types:
     # Plot the original last state, predicted state, and error comparison
     plt.figure(figsize=(15, 6))
 
-# original data
-plt.figure(figsize=(10, 6))
-plt.pcolormesh(lon, lat, original_last_state, shading='auto', cmap='viridis')
-plt.colorbar(label=f'{data_config["name"]} ({data_config["unit"]})')
-plt.title(f'Original Data - Last Time Step')
-plt.xlabel('Longitude')
-plt.ylabel('Latitude')
-plt.tight_layout()
-plt.savefig(f'{data_config["dir"]}/DMD_original_data.png')
-plt.close()
+    # original data
+    plt.figure(figsize=(10, 6))
+    plt.pcolormesh(lon, lat, original_last_state, shading='auto', cmap='viridis')
+    plt.colorbar(label=f'{data_config["name"]} ({data_config["unit"]})')
+    plt.title(f'Original Data - Last Time Step')
+    plt.xlabel('Longitude')
+    plt.ylabel('Latitude')
+    plt.tight_layout()
+    plt.savefig(f'{data_config["dir"]}/DMD_original_data.png')
+    plt.close()
 
-# predicted data
-plt.figure(figsize=(10, 6))
-plt.pcolormesh(lon, lat, predicted_state, shading='auto', cmap='viridis')
-plt.colorbar(label=f'{data_config["name"]} ({data_config["unit"]})')
-plt.title(f'Predicted Data - Next Time Step')
-plt.xlabel('Longitude')
-plt.ylabel('Latitude')
-plt.tight_layout()
-plt.savefig(f'{data_config["dir"]}/DMD_predicted_data.png')
-plt.close()
+    # predicted data
+    plt.figure(figsize=(10, 6))
+    plt.pcolormesh(lon, lat, predicted_state, shading='auto', cmap='viridis')
+    plt.colorbar(label=f'{data_config["name"]} ({data_config["unit"]})')
+    plt.title(f'Predicted Data - Next Time Step')
+    plt.xlabel('Longitude')
+    plt.ylabel('Latitude')
+    plt.tight_layout()
+    plt.savefig(f'{data_config["dir"]}/DMD_predicted_data.png')
+    plt.close()
 
-# error comparison
-plt.figure(figsize=(10, 6))
-plt.pcolormesh(lon, lat, original_last_state - predicted_state, 
-               cmap='RdBu_r', shading='auto', vmin=-1000, vmax=1000)  # 可以根据实际情况调整vmin和vmax的值
-plt.colorbar(label=f'Error ({data_config["unit"]})')
-plt.title(f'Error Comparison')
-plt.xlabel('Longitude')
-plt.ylabel('Latitude')
-plt.tight_layout()
-plt.savefig(f'{data_config["dir"]}/DMD_error_comparison.png')
-plt.close()
+    # error comparison
+    plt.figure(figsize=(10, 6))
+    plt.pcolormesh(lon, lat, original_last_state - predicted_state, 
+                   cmap='RdBu_r', shading='auto')
+    plt.colorbar(label=f'Error ({data_config["unit"]})')
+    plt.title(f'Error Comparison')
+    plt.xlabel('Longitude')
+    plt.ylabel('Latitude')
+    plt.tight_layout()
+    plt.savefig(f'{data_config["dir"]}/DMD_error_comparison.png')
+    plt.close()
 
 
 print("\nAll processes completed.")
